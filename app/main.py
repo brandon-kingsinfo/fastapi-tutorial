@@ -1,12 +1,31 @@
-from re import I
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI, Body
 from fastapi.responses import JSONResponse
+from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
 from enum import Enum
 import uvicorn
 from typing import Optional
 from input_models import Item
+from routers.files import urls as files
+from routers.auth import urls as auth
+
+def test_main():
+    print('test main...')
+
 
 app = FastAPI()
+
+app.mount("/static",StaticFiles(directory="static"), name="static")
+
+app.include_router(
+    auth.router,
+    prefix="/auth",
+)
+
+app.include_router(
+    files.router,
+    prefix="/files",
+)
 
 # basic routes
 
@@ -25,6 +44,10 @@ async def root():
 async def deprecated():
     return {"message": "this route is deprecated, dont' use it!"}
 
+
+@app.post("/echo")
+async def echo(cmd:str = Body(..., embed=True)):
+    return cmd
 
 # path parameters
 fake_items = [
